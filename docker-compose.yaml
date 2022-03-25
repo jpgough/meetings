@@ -4,7 +4,6 @@ services:
     image: jpgough/attendees:latest
     ports:
       - "80:8080"
-      - "9090:9090"
   meetings-http:
     build:
       context: ./
