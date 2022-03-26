@@ -25,19 +25,29 @@ public class MeetingsController {
 
     @GetMapping("/meetings")
     @ResponseBody
-    public ValueWrapper<MeetingSummary> getMeetings() {
-        return new ValueWrapper<MeetingSummary>(meetingService.getMeetingSummaries());
+    public ResponseEntity<ValueWrapper<MeetingSummary>> getMeetings() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CACHE_CONTROL, this.headerPropagation.bustAllCaching().getHeaderValue());
+
+        return ResponseEntity.ok()
+                .headers(responseHeaders)
+                .body(new ValueWrapper<MeetingSummary>(meetingService.getMeetingSummaries()));
     }
 
     @GetMapping("/meetings/{id}")
     @ResponseBody
-    public Meeting getMeeting(@PathVariable Integer id, @RequestHeader Map<String, String> headers) {
-        return meetingService.getMeetingDetail(id, headers);
+    public ResponseEntity<Meeting> getMeeting(@PathVariable Integer id, @RequestHeader Map<String, String> headers) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CACHE_CONTROL, this.headerPropagation.bustAllCaching().getHeaderValue());
+
+        return ResponseEntity.ok()
+                .headers(responseHeaders)
+                .body(meetingService.getMeetingDetail(id, headers));
     }
 
     @GetMapping("/external")
     @ResponseBody
-    public String getExternalContent(@RequestHeader Map<String, String> headers) {
+    public ResponseEntity<String> getExternalContent(@RequestHeader Map<String, String> headers) {
         HttpHeaders requestHeaders = this.headerPropagation.captureTracingHeaders(headers);
         requestHeaders.add("Host", "httpbin.org");
         requestHeaders.add("Cache-Control", this.headerPropagation.bustAllCaching().getHeaderValue());
@@ -45,6 +55,9 @@ public class MeetingsController {
 
         ResponseEntity<String> response = restTemplate.exchange("http://52.55.211.119/get", HttpMethod.GET,
                 requestEntity, String.class);
-        return response.toString();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CACHE_CONTROL, this.headerPropagation.bustAllCaching().getHeaderValue());
+
+        return ResponseEntity.ok().headers(responseHeaders).body(response.toString());
     }
 }
